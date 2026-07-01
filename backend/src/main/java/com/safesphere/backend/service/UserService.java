@@ -1,11 +1,17 @@
 package com.safesphere.backend.service;
 
+import com.safesphere.backend.dto.ApiResponse;
+import com.safesphere.backend.dto.LoginRequest;
+import com.safesphere.backend.dto.LoginResponse;
 import com.safesphere.backend.dto.RegisterRequest;
 import com.safesphere.backend.entity.User;
+import com.safesphere.backend.exception.EmailAlreadyExistsException;
 import com.safesphere.backend.repository.UserRepository;
+import com.safesphere.backend.security.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -14,24 +20,26 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
+    public UserService(UserRepository repository,
+                       PasswordEncoder passwordEncoder,
+                       AuthenticationManager authenticationManager,
+                       JwtService jwtService){
 
-    public UserService(UserRepository userRepository,
-                       PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
+        this.userRepository = repository;
         this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
     }
 
-    public String registerUser(RegisterRequest request) {
+    public ApiResponse<String> registerUser(RegisterRequest request){
 
-        // Step 1: Check if email already exists
-        Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
-
-        if (existingUser.isPresent()) {
-            return "Email already registered";
+        if(userRepository.findByEmail(request.getEmail()).isPresent()){
+            throw new EmailAlreadyExistsException("Email already registered");
         }
 
-        // Step 2: Create User object
-        User user = User.builder()
+        User user=User.builder()
                 .fullName(request.getFullName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
@@ -39,10 +47,39 @@ public class UserService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        // Step 3: Save into database
         userRepository.save(user);
 
-        // Step 4: Return response
-        return "User Registered Successfully";
+        return new ApiResponse<>(
+                true,
+                "User Registered Successfully",
+                null
+        );
+
+    }
+    public ApiResponse<LoginResponse> login(LoginRequest request){
+
+        authenticationManager.authenticate(
+
+                new UsernamePasswordAuthenticationToken(
+
+                        request.getEmail(),
+                        request.getPassword()
+
+                )
+
+        );
+
+        String jwt = jwtService.generateToken(request.getEmail());
+
+        return new ApiResponse<>(
+
+                true,
+
+                "Login Successful",
+
+                new LoginResponse(jwt)
+
+        );
+
     }
 }
