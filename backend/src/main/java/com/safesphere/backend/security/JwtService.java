@@ -35,7 +35,11 @@ public class JwtService {
                 .signWith(getSignInKey())
                 .compact();
     }
+    public String generateToken(UserDetails userDetails) {
 
+        return generateToken(userDetails.getUsername());
+
+    }
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
