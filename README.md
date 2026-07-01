@@ -1,2 +1,25 @@
-# SafeSphere-AI
-SafeSphere AI is an AI-powered Predictive Safety Intelligence Platform that helps users stay safe through risk prediction, safe route recommendations, real-time emergency response, community incident reporting, and offline SOS fallback mechanisms.
+# SafeSphere AI
+
+Predictive Safety Intelligence Platform
+
+## Tech Stack
+
+- React
+- Spring Boot
+- PostgreSQL
+- FastAPI
+- Docker
+- Kafka
+- Redis
+
+## Features
+
+- SOS Emergency System
+- Guardian Management
+- Live Location Tracking
+- Incident Reporting
+- AI Risk Prediction
+- Safety Heatmap
+- Safe Route Recommendation
+- Check-In Timer
+- Offline SMS Fallback
